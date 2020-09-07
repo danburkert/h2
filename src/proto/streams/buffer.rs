@@ -40,6 +40,7 @@ impl Deque {
         self.indices.is_none()
     }
 
+    #[inline(never)]
     pub fn push_back<T>(&mut self, buf: &mut Buffer<T>, value: T) {
         let key = buf.slab.insert(Slot { value, next: None });
 
@@ -57,6 +58,7 @@ impl Deque {
         }
     }
 
+    #[inline(never)]
     pub fn push_front<T>(&mut self, buf: &mut Buffer<T>, value: T) {
         let key = buf.slab.insert(Slot { value, next: None });
 
