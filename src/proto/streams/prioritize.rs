@@ -76,6 +76,7 @@ pub(crate) struct Prioritized<B> {
 // ===== impl Prioritize =====
 
 impl Prioritize {
+    #[inline(never)]
     pub fn new(config: &Config) -> Prioritize {
         let mut flow = FlowControl::new();
 
@@ -97,6 +98,7 @@ impl Prioritize {
     }
 
     /// Queue a frame to be sent to the remote
+    #[inline(never)]
     pub fn queue_frame<B>(
         &mut self,
         frame: Frame<B>,
@@ -111,6 +113,7 @@ impl Prioritize {
         self.schedule_send(stream, task);
     }
 
+    #[inline(never)]
     pub fn schedule_send(&mut self, stream: &mut store::Ptr, task: &mut Option<Waker>) {
         // If the stream is waiting to be opened, nothing more to do.
         if stream.is_send_ready() {
@@ -125,11 +128,13 @@ impl Prioritize {
         }
     }
 
+    #[inline(never)]
     pub fn queue_open(&mut self, stream: &mut store::Ptr) {
         self.pending_open.push(stream);
     }
 
     /// Send a data frame
+    #[inline(never)]
     pub fn send_data<B>(
         &mut self,
         frame: frame::Data<B>,
@@ -207,6 +212,7 @@ impl Prioritize {
     }
 
     /// Request capacity to send data
+    #[inline(never)]
     pub fn reserve_capacity(
         &mut self,
         capacity: WindowSize,
@@ -261,6 +267,7 @@ impl Prioritize {
         }
     }
 
+    #[inline(never)]
     pub fn recv_stream_window_update(
         &mut self,
         inc: WindowSize,
@@ -290,6 +297,7 @@ impl Prioritize {
         Ok(())
     }
 
+    #[inline(never)]
     pub fn recv_connection_window_update(
         &mut self,
         inc: WindowSize,
@@ -305,6 +313,7 @@ impl Prioritize {
 
     /// Reclaim all capacity assigned to the stream and re-assign it to the
     /// connection
+    #[inline(never)]
     pub fn reclaim_all_capacity(&mut self, stream: &mut store::Ptr, counts: &mut Counts) {
         let available = stream.send_flow.available().as_size();
         stream.send_flow.claim_capacity(available);
@@ -314,6 +323,7 @@ impl Prioritize {
 
     /// Reclaim just reserved capacity, not buffered capacity, and re-assign
     /// it to the connection
+    #[inline(never)]
     pub fn reclaim_reserved_capacity(&mut self, stream: &mut store::Ptr, counts: &mut Counts) {
         // only reclaim requested capacity that isn't already buffered
         if stream.requested_send_capacity > stream.buffered_send_data {
@@ -324,6 +334,7 @@ impl Prioritize {
         }
     }
 
+    #[inline(never)]
     pub fn clear_pending_capacity(&mut self, store: &mut Store, counts: &mut Counts) {
         let span = tracing::trace_span!("clear_pending_capacity");
         let _e = span.enter();
@@ -334,6 +345,7 @@ impl Prioritize {
         }
     }
 
+    #[inline(never)]
     pub fn assign_connection_capacity<R>(
         &mut self,
         inc: WindowSize,
@@ -372,6 +384,7 @@ impl Prioritize {
     }
 
     /// Request capacity to send data
+    #[inline(never)]
     fn try_assign_capacity(&mut self, stream: &mut store::Ptr) {
         let total_requested = stream.requested_send_capacity;
 
@@ -466,6 +479,7 @@ impl Prioritize {
         }
     }
 
+    #[inline(never)]
     pub fn poll_complete<T, B>(
         &mut self,
         cx: &mut Context,
@@ -531,6 +545,7 @@ impl Prioritize {
     /// When a data frame is written to the codec, it may not be written in its
     /// entirety (large chunks are split up into potentially many data frames).
     /// In this case, the stream needs to be reprioritized.
+    #[inline(never)]
     fn reclaim_frame<T, B>(
         &mut self,
         buffer: &mut Buffer<Frame<B>>,
@@ -589,6 +604,7 @@ impl Prioritize {
 
     /// Push the frame to the front of the stream's deque, scheduling the
     /// stream if needed.
+    #[inline(never)]
     fn push_back_frame<B>(
         &mut self,
         frame: Frame<B>,
@@ -605,6 +621,7 @@ impl Prioritize {
         }
     }
 
+    #[inline(never)]
     pub fn clear_queue<B>(&mut self, buffer: &mut Buffer<Frame<B>>, stream: &mut store::Ptr) {
         let span = tracing::trace_span!("clear_queue", ?stream.id);
         let _e = span.enter();
@@ -624,6 +641,7 @@ impl Prioritize {
         }
     }
 
+    #[inline(never)]
     pub fn clear_pending_send(&mut self, store: &mut Store, counts: &mut Counts) {
         while let Some(stream) = self.pending_send.pop(store) {
             let is_pending_reset = stream.is_pending_reset_expiration();
@@ -631,6 +649,7 @@ impl Prioritize {
         }
     }
 
+    #[inline(never)]
     pub fn clear_pending_open(&mut self, store: &mut Store, counts: &mut Counts) {
         while let Some(stream) = self.pending_open.pop(store) {
             let is_pending_reset = stream.is_pending_reset_expiration();
@@ -845,20 +864,24 @@ impl<B> Buf for Prioritized<B>
 where
     B: Buf,
 {
+    #[inline(never)]
     fn remaining(&self) -> usize {
         self.inner.remaining()
     }
 
+    #[inline(never)]
     fn bytes(&self) -> &[u8] {
         self.inner.bytes()
     }
 
+    #[inline(never)]
     fn advance(&mut self, cnt: usize) {
         self.inner.advance(cnt)
     }
 }
 
 impl<B: Buf> fmt::Debug for Prioritized<B> {
+    #[inline(never)]
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct("Prioritized")
             .field("remaining", &self.inner.get_ref().remaining())
