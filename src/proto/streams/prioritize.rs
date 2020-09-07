@@ -821,6 +821,7 @@ impl Prioritize {
         }
     }
 
+    #[inline(never)]
     fn schedule_pending_open(&mut self, store: &mut Store, counts: &mut Counts) {
         tracing::trace!("schedule_pending_open");
         // check for any pending open streams
