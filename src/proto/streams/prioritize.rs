@@ -638,6 +638,7 @@ impl Prioritize {
         }
     }
 
+    #[inline(never)]
     fn pop_frame<B>(
         &mut self,
         buffer: &mut Buffer<Frame<B>>,
